@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Image loader</title>
+	
+    <script type="text/javascript">
+		// Check for the various File API support.
+		if (window.File && window.FileReader && window.FileList && window.Blob) {
+		  // Great success! All the File APIs are supported.
+		} else {
+		  alert('The File APIs are not fully supported in this browser.');
+		}	
+		
+		function tempFunction (evt) {
+			  // Render thumbnail.
+			  var span = document.createElement('span');
+			  span.innerHTML = ['<img class="thumb" src="', evt.target.result,
+								'" title="temp"/>'].join('');
+			  document.getElementById('list').insertBefore(span, null);
+		}
+		
+ function errorHandler(evt) {
+    alert(evt.target.error.name);
+    switch(evt.target.error.code) {
+      case evt.target.error.NOT_FOUND_ERR:
+        alert('File Not Found!');
+        break;
+      case evt.target.error.NOT_READABLE_ERR:
+        alert('File is not readable');
+        break;
+      case evt.target.error.ABORT_ERR:
+        break; // noop
+      default:
+        alert('An error occurred reading this file.');
+    };
+  }
+    </script>
+	<style>
+	  .thumb {
+		height: 75px;
+		border: 1px solid #000;
+		margin: 10px 5px 0 0;
+	  }
+	</style>
+
+</head>
+<body>
+    <h1>Pick an image</h1>
+<input type="file" id="files" name="files[]" multiple />
+<output id="list"></output>
+
+<script>
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++) {
+
+      // Only process image files.
+      if (!f.type.match('image.*')) {
+        continue;
+      }
+
+      var reader = new FileReader();
+
+      // Closure to capture the file information.
+    // Need a closure to capture the file information.
+    reader.onloadend = (function(theFile) {
+      return function(e) {
+        // Render thumbnail.
+        var span = document.createElement('span');
+        span.innerHTML = ['<img class="thumb" src="', e.target.result,
+                          '" title="', escape(theFile.name), '"/>'].join('');
+         document.getElementById('list').insertBefore(span, null);
+      };
+    })(f);
+
+      reader.onerror = errorHandler;
+      
+      // Read in the image file as a data URL.
+      reader.readAsDataURL(f);
+    }
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+</script>
+</body>
+</html>

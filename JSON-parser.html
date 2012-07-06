@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>JSON to CSV</title>
+    <script src="../JSON-js/json2.js" type="text/javascript"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+	
+    <script type="text/javascript">
+		// Check for the various File API support.
+		if (window.File && window.FileReader && window.FileList && window.Blob) {
+		  // Great success! All the File APIs are supported.
+		} else {
+		  alert('The File APIs are not fully supported in this browser.');
+		}	
+		
+		function handleFileSelect(evt) {
+			var files = evt.target.files; // FileList object
+			
+			// files is a FileList of File objects. List some properties.
+			var output = [];
+			for (var i = 0, f; f = files[i]; i++) {
+				output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+						  f.size, ' bytes, last modified: ',
+						  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+						  '</li>');
+				document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+			}
+			
+			var reader = new FileReader();
+// 				reader.onprogress = updateProgress;
+			reader.onloadend = loaded;
+// 				reader.onerror = errorHandler;
+
+			for (var i = 0, f; f = files[i]; i++) {
+				reader.readAsText(f);
+			
+			}
+		}
+		
+		function updateProgress(evt) {
+		  if (evt.lengthComputable) {
+			// evt.loaded and evt.total are ProgressEvent properties
+			var loaded = (evt.loaded / evt.total);
+			if (loaded < 1) {
+			  // Increase the prog bar length
+			  // style.width = (loaded * 200) + "px";
+			}
+		  }
+		}
+	
+		function loaded(evt) {
+			// Obtain the read file data    
+  			var fileString = evt.target.result;
+  			
+		    var json3 = { "d": fileString};
+			DownloadJSON2CSV(json3.d);
+			
+		}	
+	
+		function errorHandler(evt) {
+			alert (evt.target.error.name);
+		  if(evt.target.error.name == "NotReadableErr") {
+			// The file could not be read
+		  }
+		}
+		
+		function DownloadJSON2CSV(objArray)
+		{
+			var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+	
+			var str = '';
+	
+			for (var i = 0; i < array.length; i++) {
+				var line = '';
+	
+				for (var index in array[i]) {
+					line += array[i][index] + ',';
+				}
+	
+				// Here is an example where you would wrap the values in double quotes
+				// for (var index in array[i]) {
+				//    line += '"' + array[i][index] + '",';
+				// }
+	
+				line.slice(0,line.Length-1); 
+	
+				str += line + '\r\n';
+			}
+// 			save_content_to_file(escape(str), name)
+			window.open( "data:text/csv;charset=utf-8," + escape(str));
+		}
+function save_content_to_file(content, filename)
+{
+    var dlg = false;
+    with(document){
+     ir=createElement('iframe');
+     ir.id='ifr';
+     ir.location='about.blank';
+     ir.style.display='none';
+     body.appendChild(ir);
+      with(getElementById('ifr').contentWindow.document){
+           open("text/plain", "replace");
+           charset = "utf-8";
+           write(content);
+           close();
+           document.charset = "utf-8";
+           dlg = execCommand('SaveAs', false, filename+'.txt');
+       }
+       body.removeChild(ir);
+     }
+    return dlg;
+}
+
+    </script>
+
+</head>
+<body>
+    <h1>Select JSON files ...</h1>
+
+<input type="file" id="files" name="files[]" multiple />
+<output id="list"></output>
+
+<script>
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+</script>
+</body>
+</html>
